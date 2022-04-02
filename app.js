@@ -1,6 +1,8 @@
 const qwerty = document.getElementById('qwerty');
 const phrase = document.getElementById('phrase');
 const startBtn = document.getElementsByClassName('btn__reset')[0];
+const buttons = qwerty.querySelectorAll('button');
+const livesTotal = document.querySelectorAll('.tries');
 let missed = 0;
 
 const phrases = [
@@ -37,10 +39,43 @@ function addPhraseToDisplay(arr) {
         const letter = addLI(each);
         ul.append(letter);
         if (each !== ' ') {
-            letter.className = 'letter';
+            letter.className += ' letter';
+        } else if (each === ' ') {
+            letter.className += ' space';
         }
     }
 };
 
+//choose a phrase and display gameboard
 const phraseArray = getRandomPhraseAsArray(phrases);
 addPhraseToDisplay(phraseArray);
+
+function checkLetter(btn) {
+    const letterSelect = btn.innerText;
+    const letterAll = document.getElementsByClassName("letter");
+    const letterArray = Array.from(letterAll);
+    let match = null;
+    for (each of letterArray) {
+        // console.log('from phrase: ' + each.innerText, 'letter you chose: ' + letterSelect);
+        if (each.innerText === letterSelect) {
+            match = letterSelect;
+            each.className += ' show';
+        }
+    }
+    return match;
+}
+
+qwerty.addEventListener('click', (e) => {
+    const button = e.target;
+    if (button.tagName === 'BUTTON' && button.className !== 'chosen') {
+        button.className = 'chosen';
+        button.setAttribute('disabled', 'true');
+        const letterFound = checkLetter(button);
+        console.log(letterFound);
+        if (!letterFound) {
+            missed += 1;
+            // livesRemain.lastElementChild.setAttribute('src', 'images/lostHeart.png');
+        }
+        console.log(missed +' missed guesses');
+    }
+});
