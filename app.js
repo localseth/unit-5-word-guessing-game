@@ -1,9 +1,12 @@
+const overlay = document.getElementById('overlay');
+const headline = document.querySelector('.title');
 const qwerty = document.getElementById('qwerty');
 const phrase = document.getElementById('phrase');
 const startBtn = document.getElementsByClassName('btn__reset')[0];
 const buttons = qwerty.querySelectorAll('button');
-const livesTotal = document.querySelectorAll('.tries');
+const livesObject = document.getElementsByClassName('tries')[0].parentElement;
 let missed = 0;
+let win = false;
 
 const phrases = [
     'it aint over til its over',
@@ -17,7 +20,7 @@ const phrases = [
 
 //remove div to start game
 startBtn.addEventListener('click', () => {
-    document.getElementById('overlay').style.display = 'none';
+    overlay.style.display = 'none';
 });
 
 function getRandomPhraseAsArray(arr) {
@@ -47,7 +50,7 @@ function addPhraseToDisplay(arr) {
 };
 
 //choose a phrase and display gameboard
-const phraseArray = getRandomPhraseAsArray(phrases);
+let phraseArray = getRandomPhraseAsArray(phrases);
 addPhraseToDisplay(phraseArray);
 
 function checkLetter(btn) {
@@ -56,7 +59,6 @@ function checkLetter(btn) {
     const letterArray = Array.from(letterAll);
     let match = null;
     for (each of letterArray) {
-        // console.log('from phrase: ' + each.innerText, 'letter you chose: ' + letterSelect);
         if (each.innerText === letterSelect) {
             match = letterSelect;
             each.className += ' show';
@@ -65,6 +67,56 @@ function checkLetter(btn) {
     return match;
 }
 
+//swaps the leftmost live heart with a grey heart
+function swapHeart() {
+    i = 6-missed;
+    const heartImg = livesObject.querySelector(`:nth-child(${i})`).lastElementChild;
+    heartImg.setAttribute('src', 'images/lostHeart.png');
+}
+
+function newGame () {
+    for (each of buttons) {
+        each.removeAttribute('disabled');
+        each.removeAttribute('class');
+    }
+    phrase.firstElementChild.innerHTML = '';
+    phraseArray = getRandomPhraseAsArray(phrases);
+    addPhraseToDisplay(phraseArray);
+    missed = 0;
+    for (each of livesObject.children) {
+        each.firstElementChild.setAttribute('src', 'images/liveHeart.png')
+    }
+}
+
+//display overlay with win/lose status
+function results(score) {
+    if (score) {
+        overlay.className = 'win';
+        headline.innerText = "Congratulations! You've won!";
+    }
+    if (!score) {
+        overlay.className = 'lose';
+        headline.innerHTML = 'Sorry, you lost!<br>Better luck next time!';
+    }
+    overlay.style.display = 'flex';
+    startBtn.innerText = 'start a new game';
+    newGame();
+}
+
+function checkWin() {
+    const hiddenLetters = document.querySelectorAll('.letter');
+    const revealedLetters = document.querySelectorAll('.show');
+    if (hiddenLetters.length === revealedLetters.length) {
+        win = true;
+        results(win);
+    }
+    if (missed > 4) {
+        win = false;
+        results(win);
+    }
+}
+
+//click letter and check for match and win/lose
 qwerty.addEventListener('click', (e) => {
     const button = e.target;
     if (button.tagName === 'BUTTON' && button.className !== 'chosen') {
@@ -74,8 +126,10 @@ qwerty.addEventListener('click', (e) => {
         console.log(letterFound);
         if (!letterFound) {
             missed += 1;
-            // livesRemain.lastElementChild.setAttribute('src', 'images/lostHeart.png');
+            swapHeart();
         }
         console.log(missed +' missed guesses');
     }
+    checkWin();
 });
+
