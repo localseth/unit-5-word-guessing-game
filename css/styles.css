@@ -55,6 +55,10 @@ button {
   transition: var(--transition);
 }
 
+button:hover {
+  opacity: 0.65;
+}
+
 .main-container {
   display: flex;
   flex-direction: column;
